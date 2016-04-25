@@ -161,7 +161,7 @@ module WashOut
       entity = if defined?(Rails::VERSION::MAJOR) && (Rails::VERSION::MAJOR >= 4)
         'action'
       else
-        'filter' 
+        'filter'
       end
 
       controller.send :"around_#{entity}", :_catch_soap_errors
@@ -171,6 +171,51 @@ module WashOut
       controller.send :"before_#{entity}", :_map_soap_parameters,   :except => [
         :_generate_wsdl, :_invalid_action ]
       controller.send :"skip_before_#{entity}", :verify_authenticity_token
+    end
+
+    def self.find_all_values_for(hash) # deep_select substitute as that method was not collecting nested hashes in arrays
+      result = []
+      if hash.has_key?(:@id)
+        result << hash
+      end
+      hash.values.each do |hash_value|
+        if hash_value.is_a? Array
+          values = hash_value
+        else
+          values = [hash_value]
+        end
+        values.each do |value|
+          result += find_all_values_for(value) if value.is_a? Hash
+        end
+      end
+      result.compact
+    end
+
+    def self.replace_all_values_for(hash, replace) # deep_replace_href substitute as that method was not replacing nested href in arrays
+      return replace[hash[:@href]] if hash.has_key?(:@href)
+      hash.values.each do |hash_value|
+        if hash_value.is_a? Array
+          values = hash_value
+        else
+          values = [hash_value]
+        end
+
+        values.each do |val|
+          if val.is_a? Hash
+            val.each do |key, value|
+              if value.is_a? Array
+                temp_array = []
+                value.each do |h|
+                   temp_array << replace_all_values_for(h, replace) if h.is_a? Hash
+                end
+                val[key] = temp_array
+              end
+              val[key] = replace_all_values_for(value, replace) if value.is_a? Hash
+            end
+          end
+        end
+      end
+      hash
     end
 
     def self.deep_select(collection, result = [])

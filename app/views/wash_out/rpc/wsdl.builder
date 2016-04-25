@@ -2,9 +2,13 @@ xml.instruct!
 xml.definitions 'xmlns' => 'http://schemas.xmlsoap.org/wsdl/',
                 'xmlns:tns' => @namespace,
                 'xmlns:soap' => 'http://schemas.xmlsoap.org/wsdl/soap/',
+                'xmlns:tm' => 'http://schemas.xmlsoap.org/wsdl/mime/textMatching',
+                'xmlns:soapenc' => 'http://schemas.xmlsoap.org/soap/encoding/',
+                'xmlns:mime' => 'http://schemas.xmlsoap.org/wsdl/mime/',
                 'xmlns:xsd' => 'http://www.w3.org/2001/XMLSchema',
                 'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
                 'xmlns:soap-enc' => 'http://schemas.xmlsoap.org/soap/encoding/',
+                'xmlns:http' => 'http://schemas.xmlsoap.org/wsdl/http/',
                 'xmlns:wsdl' => 'http://schemas.xmlsoap.org/wsdl/',
                 'name' => @name,
                 'targetNamespace' => @namespace do
