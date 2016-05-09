@@ -64,22 +64,15 @@ module WashOut
       env['wash_out.soap_data'] = nori(controller.soap_config.snakecase_input).parse(soap_body env)
       # references = WashOut::Dispatcher.deep_select(env['wash_out.soap_data'])
       references = WashOut::Dispatcher.find_all_values_for(env['wash_out.soap_data'])
-
       unless references.blank?
         replaces = {}; references.each{|r| replaces['#'+r[:@id]] = r}
         # env['wash_out.soap_data'] = WashOut::Dispatcher.deep_replace_href(env['wash_out.soap_data'], replaces)
         env['wash_out.soap_data'] = WashOut::Dispatcher.replace_all_values_for(env['wash_out.soap_data'], replaces)
       end
-      if env['wash_out.soap_action'] == "BulkImportSolitaires" && env['wash_out.soap_data'] && env['wash_out.soap_data'][:Envelope] && env['wash_out.soap_data'][:Envelope][:Body] && env['wash_out.soap_data'][:Envelope][:Body][:BulkImportSolitaires] && env['wash_out.soap_data'][:Envelope][:Body][:BulkImportSolitaires][:Collection] && env['wash_out.soap_data'][:Envelope][:Body][:BulkImportSolitaires][:Collection][:SolitaireAPIEntity] && env['wash_out.soap_data'][:Envelope][:Body][:BulkImportSolitaires][:Collection][:SolitaireAPIEntity].is_a?(Hash)
-        env['wash_out.soap_data'][:Envelope][:Body][:BulkImportSolitaires][:Collection][:SolitaireAPIEntity] = env['wash_out.soap_data'][:Envelope][:Body][:BulkImportSolitaires][:Collection][:SolitaireAPIEntity][:Item]
-        env['wash_out.soap_data'][:Envelope][:Body][:BulkImportSolitaires][:Collection][:SolitaireAPIEntity].each do |entity|
-          entity.delete_if{|k,v| v.is_a?(Hash) && v.keys.length == 1 && v.keys[0][0] == "@" }
-        end
-      elsif env['wash_out.soap_action'] == "UpdateSolitairePrice" && env['wash_out.soap_data'] && env['wash_out.soap_data'][:Envelope] && env['wash_out.soap_data'][:Envelope][:Body] && env['wash_out.soap_data'][:Envelope][:Body][:UpdateSolitairePrice] && env['wash_out.soap_data'][:Envelope][:Body][:UpdateSolitairePrice][:Collection] && env['wash_out.soap_data'][:Envelope][:Body][:UpdateSolitairePrice][:Collection][:PriceUpdatedEntity] && env['wash_out.soap_data'][:Envelope][:Body][:UpdateSolitairePrice][:Collection][:PriceUpdatedEntity].is_a?(Hash)
-        env['wash_out.soap_data'][:Envelope][:Body][:UpdateSolitairePrice][:Collection][:PriceUpdatedEntity] = env['wash_out.soap_data'][:Envelope][:Body][:UpdateSolitairePrice][:Collection][:PriceUpdatedEntity][:Item]
-        env['wash_out.soap_data'][:Envelope][:Body][:UpdateSolitairePrice][:Collection][:PriceUpdatedEntity].each do |entity|
-          entity.delete_if{|k,v| v.is_a?(Hash) && v.keys.length == 1 && v.keys[0][0] == "@" }
-        end
+      if env['wash_out.soap_action'] && env['wash_out.soap_data']
+        action = env['wash_out.soap_action']
+        env['wash_out.soap_data'][:Envelope][:Body]["#{action}".to_sym] = env['wash_out.soap_data'][:Envelope][:Body]["#{action}Request".to_sym]
+        env['wash_out.soap_data'][:Envelope][:Body].delete("#{action}Request".to_sym)
       end
       env['wash_out.soap_data']
     end
